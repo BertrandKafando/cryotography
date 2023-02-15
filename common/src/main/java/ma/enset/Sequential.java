@@ -36,143 +36,148 @@ import java.security.Security;
 import java.security.cert.Certificate;
 
 public class Sequential {
-    public static final String KEYSTORE = "src/main/ressources/mykeystore.p12";
-    public static final String PASSWORD = "mypassword";
-    public static final String FORM = "src/main/ressources/Hello.pdf";
-    public static final String DEST = "src/main/ressources/sq/";
+        public static final String KEYSTORE = "src/main/ressources/mykeystore.p12";
+        public static final String PASSWORD = "mypassword";
+        public static final String FORM = "src/main/ressources/Hello.pdf";
+        public static final String DEST = "src/main/ressources/sq/";
 
-    public static final String ALICE = "./src/main/ressources/alice";
-    public static final String CAROL = "./src/main/ressources/carol.p12";
+        public static final String ALICE = "./src/main/ressources/alice";
+        public static final String CAROL = "./src/main/ressources/carol.p12";
 
-    public static final String[] RESULT_FILES = new String[] {
-            "signed_by_alice.pdf", "signed_by_bob.pdf",
-            "signed_by_carol.pdf", "signed_by_alice2.pdf",
-            "signed_by_bob2.pdf", "signed_by_carol2.pdf",
-            "signed_by_alice3.pdf", "signed_by_bob3.pdf",
-            "signed_by_carol3.pdf", "signed_by_alice4.pdf",
-            "signed_by_bob4.pdf", "signed_by_carol4.pdf",
-    };
+        public static final String[] RESULT_FILES = new String[] {
+                        "signed_by_alice.pdf", "signed_by_bob.pdf",
+                        "signed_by_carol.pdf", "signed_by_alice2.pdf",
+                        "signed_by_bob2.pdf", "signed_by_carol2.pdf",
+                        "signed_by_alice3.pdf", "signed_by_bob3.pdf",
+                        "signed_by_carol3.pdf", "signed_by_alice4.pdf",
+                        "signed_by_bob4.pdf", "signed_by_carol4.pdf",
+        };
 
-    public void createForm() throws IOException {
-        PdfDocument pdfDoc = new PdfDocument(new PdfWriter(FORM));
-        Document doc = new Document(pdfDoc);
+        public void createForm() throws IOException {
+                PdfDocument pdfDoc = new PdfDocument(new PdfWriter(FORM));
+                Document doc = new Document(pdfDoc);
 
-        Table table = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
-        table.addCell("Signer 1: Berto");
-        table.addCell(createSignatureFieldCell("sig1"));
-        table.addCell("Signer 2: Bob");
-        table.addCell(createSignatureFieldCell("sig2"));
-        table.addCell("Signer 3: Carol");
-        table.addCell(createSignatureFieldCell("sig3"));
-        doc.add(table);
+                Table table = new Table(UnitValue.createPercentArray(1)).useAllAvailableWidth();
+                table.addCell("Signer 1: Berto");
+                table.addCell(createSignatureFieldCell("sig1"));
+                table.addCell("Signer 2: Bob");
+                table.addCell(createSignatureFieldCell("sig2"));
+                table.addCell("Signer 3: Carol");
+                table.addCell(createSignatureFieldCell("sig3"));
+                doc.add(table);
 
-        doc.close();
-    }
-
-    protected Cell createSignatureFieldCell(String name) {
-        Cell cell = new Cell();
-        cell.setHeight(50);
-        cell.setNextRenderer(new SignatureFieldCellRenderer(cell, name));
-        return cell;
-    }
-
-    public void sign(String keystore, String provider, int level, String src, String name, String dest)
-            throws GeneralSecurityException, IOException {
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        ks.load(new FileInputStream(keystore), PASSWORD.toCharArray());
-        String alias = ks.aliases().nextElement();
-        PrivateKey pk = (PrivateKey) ks.getKey(alias, PASSWORD.toCharArray());
-        Certificate[] chain = ks.getCertificateChain(alias);
-
-        PdfReader reader = new PdfReader(src);
-        PdfSigner signer = new PdfSigner(reader, new FileOutputStream(dest), new StampingProperties().useAppendMode());
-
-        // Set the signer options
-        signer.setFieldName(name);
-        signer.setCertificationLevel(level);
-
-        IExternalSignature pks = new PrivateKeySignature(pk, DigestAlgorithms.SHA256, provider);
-        IExternalDigest digest = new BouncyCastleDigest();
-
-        // Sign the document using the detached mode, CMS or CAdES equivalent.
-        signer.signDetached(digest, pks, chain, null, null, null,
-                0, PdfSigner.CryptoStandard.CMS);
-    }
-
-    public static void main(String[] args) throws IOException, GeneralSecurityException {
-        File file = new File(DEST);
-        file.mkdirs();
-
-        BouncyCastleProvider provider = new BouncyCastleProvider();
-        Security.addProvider(provider);
-
-        Sequential app = new Sequential();
-        app.createForm();
-
-        /*
-         * Alice signs certification signature (allowing form filling),
-         * then Bob and Carol sign approval signature (not certified).
-         */
-        app.sign(ALICE, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, FORM, "sig1", DEST + RESULT_FILES[0]);
-        app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[0], "sig2",
-                DEST + RESULT_FILES[1]);
-        app.sign(CAROL, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[1], "sig3",
-                DEST + RESULT_FILES[2]);
-
-        /*
-         * Alice signs approval signatures (not certified), so does Bob
-         * and then Carol signs certification signature allowing form filling.
-         */
-        app.sign(ALICE, provider.getName(), PdfSigner.NOT_CERTIFIED, FORM, "sig1", DEST + RESULT_FILES[3]);
-        app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[3], "sig2",
-                DEST + RESULT_FILES[4]);
-        app.sign(CAROL, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, DEST + RESULT_FILES[4], "sig3",
-                DEST + RESULT_FILES[5]);
-
-        /*
-         * Alice signs approval signatures (not certified), so does Bob
-         * and then Carol signs certification signature forbidding any changes to the
-         * document.
-         */
-        app.sign(ALICE, provider.getName(), PdfSigner.NOT_CERTIFIED, FORM, "sig1", DEST + RESULT_FILES[6]);
-        app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[6], "sig2",
-                DEST + RESULT_FILES[7]);
-        app.sign(CAROL, provider.getName(), PdfSigner.CERTIFIED_NO_CHANGES_ALLOWED, DEST + RESULT_FILES[7], "sig3",
-                DEST + RESULT_FILES[8]);
-
-        /*
-         * Alice signs certification signature (allowing form filling), then Bob signs
-         * approval
-         * signatures (not certified) and then Carol signs certification signature
-         * allowing form filling.
-         */
-        app.sign(ALICE, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, FORM, "sig1", DEST + RESULT_FILES[9]);
-        app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[9], "sig2",
-                DEST + RESULT_FILES[10]);
-        app.sign(CAROL, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, DEST + RESULT_FILES[10], "sig3",
-                DEST + RESULT_FILES[11]);
-    }
-
-    private static class SignatureFieldCellRenderer extends CellRenderer {
-        public String name;
-
-        public SignatureFieldCellRenderer(Cell modelElement, String name) {
-            super(modelElement);
-            this.name = name;
+                doc.close();
         }
 
-        @Override
-        public void draw(DrawContext drawContext) {
-            super.draw(drawContext);
-            PdfWidgetAnnotation widget = new PdfWidgetAnnotation(getOccupiedAreaBBox());
-            PdfFormField field = PdfFormField.createSignature(drawContext.getDocument());
-            field.addKid(widget);
-            field.setPage(1);
-            field.setFieldName(name);
-            field.getWidgets().get(0).setHighlightMode(PdfAnnotation.HIGHLIGHT_INVERT);
-            field.getWidgets().get(0).setFlags(PdfAnnotation.PRINT);
-            PdfAcroForm.getAcroForm(drawContext.getDocument(), true).addField(field);
+        protected Cell createSignatureFieldCell(String name) {
+                Cell cell = new Cell();
+                cell.setHeight(50);
+                cell.setNextRenderer(new SignatureFieldCellRenderer(cell, name));
+                return cell;
         }
-    }
+
+        public void sign(String keystore, String provider, int level, String src, String name, String dest)
+                        throws GeneralSecurityException, IOException {
+                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                ks.load(new FileInputStream(keystore), PASSWORD.toCharArray());
+                String alias = ks.aliases().nextElement();
+                PrivateKey pk = (PrivateKey) ks.getKey(alias, PASSWORD.toCharArray());
+                Certificate[] chain = ks.getCertificateChain(alias);
+
+                PdfReader reader = new PdfReader(src);
+                PdfSigner signer = new PdfSigner(reader, new FileOutputStream(dest),
+                                new StampingProperties().useAppendMode());
+
+                // Set the signer options
+                signer.setFieldName(name);
+                signer.setCertificationLevel(level);
+
+                IExternalSignature pks = new PrivateKeySignature(pk, DigestAlgorithms.SHA256, provider);
+                IExternalDigest digest = new BouncyCastleDigest();
+
+                // Sign the document using the detached mode, CMS or CAdES equivalent.
+                signer.signDetached(digest, pks, chain, null, null, null,
+                                0, PdfSigner.CryptoStandard.CMS);
+        }
+
+        public static void main(String[] args) throws IOException, GeneralSecurityException {
+                File file = new File(DEST);
+                file.mkdirs();
+
+                BouncyCastleProvider provider = new BouncyCastleProvider();
+                Security.addProvider(provider);
+
+                Sequential app = new Sequential();
+                app.createForm();
+
+                /*
+                 * Alice signs certification signature (allowing form filling),
+                 * then Bob and Carol sign approval signature (not certified).
+                 */
+                app.sign(ALICE, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, FORM, "sig1",
+                                DEST + RESULT_FILES[0]);
+                app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[0], "sig2",
+                                DEST + RESULT_FILES[1]);
+                app.sign(CAROL, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[1], "sig3",
+                                DEST + RESULT_FILES[2]);
+
+                /*
+                 * Alice signs approval signatures (not certified), so does Bob
+                 * and then Carol signs certification signature allowing form filling.
+                 */
+                app.sign(ALICE, provider.getName(), PdfSigner.NOT_CERTIFIED, FORM, "sig1", DEST + RESULT_FILES[3]);
+                app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[3], "sig2",
+                                DEST + RESULT_FILES[4]);
+                app.sign(CAROL, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, DEST + RESULT_FILES[4], "sig3",
+                                DEST + RESULT_FILES[5]);
+
+                /*
+                 ***** ERROR*****
+                 * Alice signs approval signatures (not certified), so does Bob
+                 * and then Carol signs certification signature forbidding any changes to the
+                 * document.
+                 */
+                app.sign(ALICE, provider.getName(), PdfSigner.NOT_CERTIFIED, FORM, "sig1", DEST + RESULT_FILES[6]);
+                app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[6], "sig2",
+                                DEST + RESULT_FILES[7]);
+                app.sign(CAROL, provider.getName(), PdfSigner.CERTIFIED_NO_CHANGES_ALLOWED, DEST + RESULT_FILES[7],
+                                "sig3",
+                                DEST + RESULT_FILES[8]);
+
+                /*
+                 * Alice signs certification signature (allowing form filling), then Bob signs
+                 * approval
+                 * signatures (not certified) and then Carol signs certification signature
+                 * allowing form filling.
+                 */
+                app.sign(ALICE, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, FORM, "sig1",
+                                DEST + RESULT_FILES[9]);
+                app.sign(KEYSTORE, provider.getName(), PdfSigner.NOT_CERTIFIED, DEST + RESULT_FILES[9], "sig2",
+                                DEST + RESULT_FILES[10]);
+                app.sign(CAROL, provider.getName(), PdfSigner.CERTIFIED_FORM_FILLING, DEST + RESULT_FILES[10], "sig3",
+                                DEST + RESULT_FILES[11]);
+        }
+
+        private static class SignatureFieldCellRenderer extends CellRenderer {
+                public String name;
+
+                public SignatureFieldCellRenderer(Cell modelElement, String name) {
+                        super(modelElement);
+                        this.name = name;
+                }
+
+                @Override
+                public void draw(DrawContext drawContext) {
+                        super.draw(drawContext);
+                        PdfWidgetAnnotation widget = new PdfWidgetAnnotation(getOccupiedAreaBBox());
+                        PdfFormField field = PdfFormField.createSignature(drawContext.getDocument());
+                        field.addKid(widget);
+                        field.setPage(1);
+                        field.setFieldName(name);
+                        field.getWidgets().get(0).setHighlightMode(PdfAnnotation.HIGHLIGHT_INVERT);
+                        field.getWidgets().get(0).setFlags(PdfAnnotation.PRINT);
+                        PdfAcroForm.getAcroForm(drawContext.getDocument(), true).addField(field);
+                }
+        }
 
 }

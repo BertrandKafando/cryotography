@@ -5,6 +5,7 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 public class LoadKeystore {
@@ -18,6 +19,9 @@ public class LoadKeystore {
 
     public X509Certificate getCertificate(String alias) throws KeyStoreException {
         return (X509Certificate) this.ks.getCertificate(alias);
+    }
+    public Certificate [] getCertificateChain(String alias) throws KeyStoreException {
+        return this.ks.getCertificateChain(alias);
     }
 
     public Key getPublicKey(String alias) throws KeyStoreException {
