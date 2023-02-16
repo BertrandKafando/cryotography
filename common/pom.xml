@@ -81,6 +81,21 @@
       <version>${iTextVerion}</version>
   </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on -->
+  <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+      <version>1.70</version>
+  </dependency>
+
+<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk15on -->
+<dependency>
+  <groupId>org.bouncycastle</groupId>
+  <artifactId>bcutil-jdk15on</artifactId>
+  <version>1.70</version>
+</dependency>
+
+
   <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
@@ -91,18 +106,13 @@
       <artifactId>mockito-core</artifactId>
       <version>3.0.0</version>
   </dependency>
-  <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
-      <version>1.63</version>
-  </dependency>
-  <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-<dependency>
-  <groupId>org.projectlombok</groupId>
-  <artifactId>lombok</artifactId>
-  <version>1.18.26</version>
-  <scope>provided</scope>
-</dependency>
+      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.26</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>

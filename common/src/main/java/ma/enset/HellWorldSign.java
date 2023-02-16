@@ -71,7 +71,7 @@ public class HellWorldSign {
         // sign
         HellWorldSign app = new HellWorldSign();
         app.sign(SRC, String.format(DEST, 1), chain, privateKey, DigestAlgorithms.SHA256,
-                provider.getName(), CryptoStandard.CMS, "Test 1", "Ghent");
+                provider.getName(), CryptoStandard.CMS, "Test 1", "Morocco");
 
         /* app.sign(SRC, String.format(DEST, 2), chain, privateKey, DigestAlgorithms.SHA512,
                 provider.getName(), CryptoStandard.CMS, "Test 2", "Ghent");
