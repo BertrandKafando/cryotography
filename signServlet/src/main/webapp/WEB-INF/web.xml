@@ -3,4 +3,34 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
+    <servlet>
+        <servlet-name>sign</servlet-name>
+        <servlet-class>es.kf.signservlet.ServletSigning</servlet-class>
+        <init-param>
+            <description>Keystore containing the public/private key</description>
+            <param-name>keystorepath</param-name>
+            <param-value>/WEB-INF/.keystore</param-value>
+        </init-param>
+        <init-param>
+            <description>Keystore type</description>
+            <param-name>keystoretype</param-name>
+            <param-value>PKCS12</param-value>
+        </init-param>
+        <init-param>
+            <description>Password for the keystore</description>
+            <param-name>storepass</param-name>
+            <param-value>mypassword</param-value>
+        </init-param>
+        <init-param>
+            <description>Alias for the key pair</description>
+            <param-name>alias</param-name>
+            <param-value>myalias</param-value>
+        </init-param>
+        <init-param>
+            <description>Password for the key pair</description>
+            <param-name>keypass</param-name>
+            <param-value>mypassword</param-value>
+        </init-param>
+
+    </servlet>
 </web-app>

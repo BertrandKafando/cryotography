@@ -48,7 +48,7 @@ public class SignImp {
 
         // Sign the document using the detached mode, CMS or CAdES equivalent.
         signer.signDetached(digest, pks, chain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
-
+        System.out.println("Signed: " + SRC);
         return baos.toByteArray();
     }
 }
