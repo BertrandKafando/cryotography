@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div layout:fragment="content1">
+    <div class="container">
+      <div class="row d-flex justify-content-between mt-3">
+          <button type="button" class="btn btn-primary col-4"  th:action="@{/addform}" >Add form</button>
+        <div class="col-4">
+          test filename
+        </div>
+      </div>
+        <div style="text-align: center" class="mt-2">
+            <iframe src="../Hello2.pdf" width="980" height="560" frameBorder="0" class="giphy-embed" allowFullScreen ></iframe>
+            <p><a th:href="${baseUrl}"></a></p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
