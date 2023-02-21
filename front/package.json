@@ -18,9 +18,11 @@
     "@angular/platform-browser": "^14.2.0",
     "@angular/platform-browser-dynamic": "^14.2.0",
     "@angular/router": "^14.2.0",
+    "@pdftron/pdfjs-express-viewer": "^8.7.1",
     "bootstrap": "^5.2.3",
     "ng2-pdf-viewer": "^7.0.0",
     "ngx-extended-pdf-viewer": "^16.0.2",
+    "pdfjs": "^2.4.7",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

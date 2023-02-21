@@ -5,23 +5,28 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { HttpClientModule } from '@angular/common/http';
+import { PdsjsTestComponent } from './pdsjs-test/pdsjs-test.component';
 
 const routes: Routes = [
   {path:"",component: AddFormComponent},
+  {path:"pdfjs",component: PdsjsTestComponent}
   ]
 
 
 
 @NgModule({
   declarations: [
-    AddFormComponent
+    AddFormComponent,
+    PdsjsTestComponent
   ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
     PdfViewerModule,
     NgxExtendedPdfViewerModule,
-    HttpClientModule
+    HttpClientModule,
+    PdfViewerModule
+
   ]
 })
 export class PrepSignModule { }

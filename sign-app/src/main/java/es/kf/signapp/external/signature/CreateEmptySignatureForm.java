@@ -26,10 +26,10 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * An example of creating an AcroForm and an empty signature field from scratch.
@@ -88,6 +88,63 @@ public  class CreateEmptySignatureForm
 
             document.save(DEST2);
         }
+    }
+
+    public byte[] EmptyForm (byte[] pdf, String reason, String location ,int pageNumb,String name) throws IOException {
+        PDDocument document = PDDocument.load(pdf);
+        PDPage page = document.getPage(pageNumb);
+
+        PDFont font = new PDType1Font(PDType1Font.HELVETICA.getCOSObject());
+        PDResources resources = new PDResources();
+        resources.put(COSName.HELV, font);
+
+        // Add a new AcroForm and add that to the document
+        if (document.getDocumentCatalog().getAcroForm() == null) {
+            PDAcroForm acroForm = new PDAcroForm(document);
+            document.getDocumentCatalog().setAcroForm(acroForm);
+        }
+        PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
+
+        // Add and set the resources and default appearance at the form level
+        acroForm.setDefaultResources(resources);
+
+        // Acrobat sets the font size on the form level to be
+        // auto sized. This can be achieved by setting the font size to 0.
+        String defaultAppearanceString = "/Helv 0 Tf 0 g";
+        acroForm.setDefaultAppearance(defaultAppearanceString);
+
+        // Add a signature field
+        PDSignatureField signatureField = new PDSignatureField(acroForm);
+        signatureField.setPartialName(name);
+        acroForm.getFields().add(signatureField);
+
+        // Specify the widget annotation associated with the field
+        PDAnnotationWidget widget = signatureField.getWidgets().get(0);
+        PDRectangle rect = new PDRectangle(50, 700, 200, 50);
+        widget.setRectangle(rect);
+        widget.setPage(page);
+        page.getAnnotations().add(widget);
+        // Add the field to the document
+        acroForm.getFields().add(signatureField);
+        // add text field
+
+          PDTextField textField = new PDTextField(acroForm);
+            textField.setPartialName("Reason");
+            textField.setValue(reason);
+
+        PDAnnotationWidget widget2 = textField.getWidgets().get(0);
+        PDRectangle rect2 = new PDRectangle(100, 650, 200, 50);
+        widget2.setRectangle(rect2);
+        widget2.setPage(page);
+        page.getAnnotations().add(widget2);
+        acroForm.getFields().add(textField);
+
+        // return modify fill like byte array.
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        document.save(out);
+        document.save(DEST2);
+        document.close();
+        return out.toByteArray();
     }
     
     public static void main(String[] args) throws IOException

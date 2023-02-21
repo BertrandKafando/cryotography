@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-@Controller
+//@Controller
 @RequiredArgsConstructor
 public class PrepareFormController {
     public static final String SRC = "src/main/resources/Hello.pdf";

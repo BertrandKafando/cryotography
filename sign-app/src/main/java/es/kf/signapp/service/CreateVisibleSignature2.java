@@ -305,7 +305,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
         IOUtils.closeQuietly(signatureOptions);
     }
 
-    private PDRectangle createSignatureRectangle(PDDocument doc, Rectangle2D humanRect)
+    public PDRectangle createSignatureRectangle(PDDocument doc, Rectangle2D humanRect)
     {
         float x = (float) humanRect.getX();
         float y = (float) humanRect.getY();
@@ -347,7 +347,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
     }
 
     // create a template PDF document with empty signature and return it as a stream.
-    private InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum, 
+    public InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum,
             PDRectangle rect, PDSignature signature) throws IOException
     {
         try (PDDocument doc = new PDDocument())
@@ -531,10 +531,9 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
 
         CreateVisibleSignature2 signing = new CreateVisibleSignature2(keystore, password.clone());
 
-        if (args.length >= 4 && !"-tsa".equals(args[3]))
-        {
-            signing.setImageFile(new File(args[3]));
-        }
+        // Set the signature image
+            signing.setImageFile(new File(IMG));
+
 
         File signedDocumentFile;
         String name = documentFile.getName();
