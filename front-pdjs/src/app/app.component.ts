@@ -7,4 +7,19 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'front-pdjs';
+
+  constructor() {
+
+  }
+  onSign() {
+    console.log("sign");
+  }
+  beforePrint(event: any) {
+    console.log("beforePrint");
+    console.log(event);
+  }
+  createdSigningForm($event: any) {
+    console.log("createdSigningForm");
+    console.log($event);
+  }
 }
