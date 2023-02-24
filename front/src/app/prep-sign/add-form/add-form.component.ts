@@ -22,7 +22,7 @@ export class AddFormComponent implements OnInit {
   constructor(
     private prepSignService: PrepSignService,
   ) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `../../../assets/pdfjs/build/pdf.worker.js`;
   }
 
   ngOnInit(): void {

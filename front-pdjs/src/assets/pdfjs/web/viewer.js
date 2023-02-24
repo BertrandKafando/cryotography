@@ -20,7 +20,13 @@
  * Javascript code in this page
  */
 
-/******/ (function (modules) {
+/******/
+
+/* @Bertrand */
+import { AnnotationEditorParams } from './annotation-editor-params';
+
+
+(function (modules) {
   // webpackBootstrap
   /******/ // The module cache
   /******/ var installedModules = {};
@@ -194,7 +200,12 @@
             presentationModeButton: document.getElementById("presentationMode"),
             download: document.getElementById("download"),
             viewBookmark: document.getElementById("viewBookmark"),
-          },
+            // me
+             editorFreeTextButton: document.getElementById("editorFreeText"),
+            editorFreeTextParamsToolbar: document.getElementById("editorFreeTextParamsToolbar"),
+            editorInkButton: document.getElementById("editorInk"),
+            editorInkParamsToolbar: document.getElementById("editorInkParamsToolbar"),
+            },
           secondaryToolbar: {
             toolbar: document.getElementById("secondaryToolbar"),
             toggleButton: document.getElementById("secondaryToolbarToggle"),
@@ -302,6 +313,13 @@
           printContainer: document.getElementById("printContainer"),
           openFileInputName: "fileInput",
           debuggerScriptPath: "./debugger.js",
+          annotationEditorParams: {
+          editorFreeTextFontSize: document.getElementById("editorFreeTextFontSize"),
+          editorFreeTextColor: document.getElementById("editorFreeTextColor"),
+          editorInkColor: document.getElementById("editorInkColor"),
+          editorInkThickness: document.getElementById("editorInkThickness"),
+          editorInkOpacity: document.getElementById("editorInkOpacity"),
+        }
         };
       }
 
@@ -379,11 +397,34 @@
 
       var _pdf_viewer = __webpack_require__(27);
 
+      //29
+      /*
+      .AnnotationLayerBuilder
+      .DefaultAnnotationLayerFactory
+       */
+
+      //31
+
+      /*
+      DefaultTextLayerFactory
+      TextLayerBuilder
+      */
+
+      var _annotation_tools = __webpack_require__(29);
+
+      var _annotation_editor_params = __webpack_require__(40);
+
       var _secondary_toolbar = __webpack_require__(32);
 
       var _toolbar = __webpack_require__(34);
 
       var _view_history = __webpack_require__(35);
+      /* Change by import  */
+       // get a true  _annotation_editor_params
+     // var   _annotation_editor_params_ = __webpack_require__(41);
+
+      // 37
+
 
       function _interopRequireDefault(obj) {
         return obj && obj.__esModule ? obj : { default: obj };
@@ -523,6 +564,8 @@
         },
       };
       exports.DefaultExternalServices = DefaultExternalServices;
+
+
       var PDFViewerApplication = {
         initialBookmark: document.location.hash.substring(1),
         initialized: false,
@@ -551,6 +594,8 @@
         secondaryToolbar: null,
         eventBus: null,
         l10n: null,
+        /** @type {AnnotationEditorParams}  @Bertrand*/
+        annotationEditorParams: null,
         isInitialViewSet: false,
         downloadComplete: false,
         isViewerEmbedded: window.parent !== window,
@@ -948,6 +993,7 @@
                             linkService: pdfLinkService,
                             eventBus: eventBus,
                           });
+                        const annotationEditorMode = _app_options.AppOptions.get("annotationEditorMode");
                         this.findController = findController;
                         container = appConfig.mainContainer;
                         viewer = appConfig.viewerContainer;
@@ -965,6 +1011,8 @@
                           l10n: this.l10n,
                           textLayerMode:
                             _app_options.AppOptions.get("textLayerMode"),
+                          annotationMode:  _app_options.AppOptions.get("annotationMode"),
+                          annotationEditorMode,
                           imageResourcesPath:
                             _app_options.AppOptions.get("imageResourcesPath"),
                           renderInteractiveForms: _app_options.AppOptions.get(
@@ -1000,6 +1048,21 @@
                           eventBus,
                           this.l10n
                         );
+
+                        /* @Bertrand */
+
+                        if (appConfig.annotationEditorParams) {
+                          if (annotationEditorMode !== AnnotationEditorType.DISABLE) {
+                             this.annotationEditorParams = new AnnotationEditorParams (
+                                                            appConfig.annotationEditorParams,
+                                                            eventBus);
+                          } else {
+                                for (const id of ["editorModeButtons", "editorModeSeparator"]) {
+                                document.getElementById(id)?.classList.add("hidden");
+                               }
+                          }
+                      }
+
                         this.pdfDocumentProperties =
                           new _pdf_document_properties.PDFDocumentProperties(
                             appConfig.documentProperties,
@@ -1007,6 +1070,7 @@
                             eventBus,
                             this.l10n
                           );
+
                         this.pdfCursorTools =
                           new _pdf_cursor_tools.PDFCursorTools({
                             container: container,
@@ -1014,6 +1078,8 @@
                             cursorToolOnLoad:
                               _app_options.AppOptions.get("cursorToolOnLoad"),
                           });
+
+
                         this.toolbar = new _toolbar.Toolbar(
                           appConfig.toolbar,
                           eventBus,
@@ -2238,11 +2304,13 @@
           eventBus.on("sidebarviewchanged", webViewerSidebarViewChanged);
           eventBus.on("pagemode", webViewerPageMode);
           eventBus.on("namedaction", webViewerNamedAction);
-          eventBus.on(
-            "presentationmodechanged",
-            webViewerPresentationModeChanged
-          );
+          eventBus.on("presentationmodechanged",webViewerPresentationModeChanged);
           eventBus.on("presentationmode", webViewerPresentationMode);
+
+          /* @Bertrand */
+          eventBus.on("switchannotationeditormode",webViewerSwitchAnnotationEditorMode);
+          eventBus.on("switchannotationeditorparams", webViewerSwitchAnnotationEditorParams);
+
           eventBus.on("openfile", webViewerOpenFile);
           eventBus.on("print", webViewerPrint);
           eventBus.on("download", webViewerDownload);
@@ -2423,8 +2491,12 @@
           _boundEvents.windowAfterPrint = null;
           _boundEvents.onCreatedSigningForm = null;
         },
+        /* @Bertrand */
+
       };
       exports.PDFViewerApplication = PDFViewerApplication;
+
+
       var validateFileURL;
       {
         var HOSTED_VIEWER_ORIGINS = [
@@ -2874,9 +2946,16 @@
         PDFViewerApplication.requestPresentationMode();
       }
 
+      function webViewerSwitchAnnotationEditorMode(evt) {
+        PDFViewerApplication.pdfViewer.annotationEditorMode = evt.mode;
+      }
+
+      function webViewerSwitchAnnotationEditorParams(evt) {
+        PDFViewerApplication.pdfViewer.annotationEditorParams = evt;
+      }
+
       function webViewerOpenFile() {
-        var openFileInputName =
-          PDFViewerApplication.appConfig.openFileInputName;
+        var openFileInputName = PDFViewerApplication.appConfig.openFileInputName;
         document.getElementById(openFileInputName).click();
       }
 
