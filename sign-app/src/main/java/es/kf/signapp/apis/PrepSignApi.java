@@ -8,11 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
+import java.util.List;
 
 @RestController
 @RequestMapping("/prepSign")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class PrepSignApi {
     private  final CreateEmptySignatureForm createEmptySignatureForm;
 
@@ -21,5 +22,10 @@ public class PrepSignApi {
         String[] strings = payload.getBase64().split(",");
         byte[]  fileContent = Base64.getDecoder().decode(strings[1]);
         return createEmptySignatureForm.EmptyForm(fileContent, payload.getName(), payload.getReason(), payload.getPageNumb(), payload.getLocation());
+    }
+
+    @GetMapping("/all")
+    List<String> all() {
+        return List.of("one", "two", "three", "four", "five");
     }
 }

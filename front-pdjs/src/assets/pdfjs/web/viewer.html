@@ -41,7 +41,7 @@ See https://github.com/adobe-type-tools/cmap-resources
     />
     <script src="../build/pdf.js"></script>
 
-    <script  src="viewer.js"></script>
+    <script type="module"   src="viewer.js"></script>
   </head>
 
   <body tabindex="1" class="loadingInProgress">
@@ -523,10 +523,10 @@ See https://github.com/adobe-type-tools/cmap-resources
 
                 <div id="editorModeButtons" class="splitToolbarButton toggled" role="radiogroup">
                   <button id="editorFreeText" class="toolbarButton" disabled="disabled" title="Text" role="radio" aria-checked="false" tabindex="34" data-l10n-id="editor_free_text2">
-                    <span data-l10n-id="editor_free_text2_label">Text</span>
+                    Text<span data-l10n-id="editor_free_text2_label">Text</span>
                   </button>
                   <button id="editorInk" class="toolbarButton" disabled="disabled" title="Draw" role="radio" aria-checked="false" tabindex="35" data-l10n-id="editor_ink2">
-                    <span data-l10n-id="editor_ink2_label">Draw</span>
+                   Draw <span data-l10n-id="editor_ink2_label">Draw</span>
                   </button>
                 </div>
 
@@ -563,7 +563,10 @@ See https://github.com/adobe-type-tools/cmap-resources
                   >
                     <span data-l10n-id="zoom_in_label">Zoom In</span>
                   </button>
+                </div>
+                <div class="verticalToolbarSeparator hiddenMediumView"></div>
                   <!-- @bertrand -->
+                  
                   <button
                     id="sign"
                     class="toolbarButton sign"
@@ -573,7 +576,6 @@ See https://github.com/adobe-type-tools/cmap-resources
                   > Sign
                     <span data-l10n-id="sign_label">Sign</span>
                   </button>
-                </div>
                 <span id="scaleSelectContainer" class="dropdownToolbarButton">
                   <select
                     id="scaleSelect"

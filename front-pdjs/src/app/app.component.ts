@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -11,9 +11,7 @@ export class AppComponent {
   constructor() {
 
   }
-  onSign() {
-    console.log("sign");
-  }
+
   beforePrint(event: any) {
     console.log("beforePrint");
     console.log(event);
@@ -21,5 +19,20 @@ export class AppComponent {
   createdSigningForm($event: any) {
     console.log("createdSigningForm");
     console.log($event);
+  }
+  onSign($event:any) {
+    console.log("onSign");
+    console.log($event);
+  }
+  public testPagesLoaded(count: number) {
+    console.log("testPagesLoaded() successfully called. Total pages # : " + count);
+    alert(`Document is loaded!. Total pages : ${count}`);
+  }
+  @Output() pageSelected = new EventEmitter<number>();
+
+  // ...
+
+  onPageSelected(event:any) {
+    this.pageSelected.emit(event.pageNumber);
   }
 }

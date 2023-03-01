@@ -23,8 +23,8 @@
 /******/
 
 /* @Bertrand */
-import { AnnotationEditorParams } from './annotation-editor-params';
-
+import { AnnotationEditorParams } from './annotation_editor_params.js';
+import { AnnotationEditorType } from "./annotationType.js";
 
 (function (modules) {
   // webpackBootstrap
@@ -200,7 +200,7 @@ import { AnnotationEditorParams } from './annotation-editor-params';
             presentationModeButton: document.getElementById("presentationMode"),
             download: document.getElementById("download"),
             viewBookmark: document.getElementById("viewBookmark"),
-            // me
+            // @Bertrand
              editorFreeTextButton: document.getElementById("editorFreeText"),
             editorFreeTextParamsToolbar: document.getElementById("editorFreeTextParamsToolbar"),
             editorInkButton: document.getElementById("editorInk"),
@@ -1180,23 +1180,18 @@ import { AnnotationEditorParams } from './annotation-editor-params';
 
           this.pdfViewer.currentScaleValue = newScale;
         },
-        sign: function sign() {},
-        zoomReset: function zoomReset() {
-          var ignoreDuplicate =
-            arguments.length > 0 && arguments[0] !== undefined
-              ? arguments[0]
-              : false;
+        /* @Bertrand
+        * function to sign the document
+        * */
+        // create an event link to component ng2-pdf-viewer
 
-          if (this.pdfViewer.isInPresentationMode) {
-            return;
-          } else if (
-            ignoreDuplicate &&
-            this.pdfViewer.currentScaleValue === _ui_utils.DEFAULT_SCALE_VALUE
-          ) {
-            return;
-          }
+        sign: function sign() {
+         // write a rectangle on the page with worlds sign Here
+          let viewerId = window.getUrlParameterByName("viewerId"); //c1s
 
-          this.pdfViewer.currentScaleValue = _ui_utils.DEFAULT_SCALE_VALUE;
+          //
+
+
         },
 
         get pagesCount() {
@@ -2187,7 +2182,19 @@ import { AnnotationEditorParams } from './annotation-editor-params';
             this.pdfSidebar.isThumbnailViewVisible;
           this.pdfRenderingQueue.renderHighestPriority();
         },
-        onCreatedSigningForm: function onCreatedSigningForm() {
+        onCreatedSigningForm: function onCreatedSigningForm(evt) {
+          var _this7 = this;
+
+          let viewerId = window.getUrlParameterByName("viewerId"); //c1s
+          if (viewerId) {
+            let trigger = window.getUrlParameterByName("onCreatedSigningForm");
+            if (trigger == "true") {
+              window.parent.postMessage(
+                { viewerId: viewerId, event: "onCreatedSigningForm" },
+                "*"
+              );
+            }
+          } //c1e
           console.log("onCreatedSigningForm");
         },
         beforePrint: function beforePrint() {
@@ -2285,16 +2292,12 @@ import { AnnotationEditorParams } from './annotation-editor-params';
             _boundEvents = this._boundEvents;
           _boundEvents.beforePrint = this.beforePrint.bind(this);
           _boundEvents.afterPrint = this.afterPrint.bind(this);
-          _boundEvents.onCreatedSigningForm =
-            this.onCreatedSigningForm.bind(this);
+          _boundEvents.onCreatedSigningForm = this.onCreatedSigningForm.bind(this);
           eventBus.on("resize", webViewerResize);
           eventBus.on("hashchange", webViewerHashchange);
           eventBus.on("beforeprint", _boundEvents.beforePrint);
           eventBus.on("afterprint", _boundEvents.afterPrint);
-          eventBus.on(
-            "onCreatedSigningForm",
-            _boundEvents.onCreatedSigningForm
-          );
+          eventBus.on("onCreatedSigningForm", _boundEvents.onCreatedSigningForm);
           eventBus.on("pagerendered", webViewerPageRendered);
           eventBus.on("textlayerrendered", webViewerTextLayerRendered);
           eventBus.on("updateviewarea", webViewerUpdateViewarea);
@@ -2394,10 +2397,7 @@ import { AnnotationEditorParams } from './annotation-editor-params';
             _boundEvents.windowBeforePrint
           );
           window.addEventListener("afterprint", _boundEvents.windowAfterPrint);
-          window.addEventListener(
-            "onCreatedSigningForm",
-            _boundEvents.windowOnCreatedSigningForm
-          );
+          window.addEventListener("onCreatedSigningForm",_boundEvents.windowOnCreatedSigningForm);
         },
         unbindEvents: function unbindEvents() {
           var eventBus = this.eventBus,
@@ -2457,7 +2457,6 @@ import { AnnotationEditorParams } from './annotation-editor-params';
           eventBus.off("fileinputchange", webViewerFileInputChange);
           _boundEvents.beforePrint = null;
           _boundEvents.afterPrint = null;
-          _boundEvents.onCreatedSigningForm = null;
         },
         unbindWindowEvents: function unbindWindowEvents() {
           var _boundEvents = this._boundEvents;
@@ -17569,8 +17568,10 @@ import { AnnotationEditorParams } from './annotation-editor-params';
                     source: self,
                   });
                 });
-                items.scaleSelect.oncontextmenu =
-                  _ui_utils.noContextMenuHandler;
+
+                // add text
+
+                items.scaleSelect.oncontextmenu = _ui_utils.noContextMenuHandler;
                 eventBus.on("localized", function () {
                   _this._localized();
                 });
@@ -20596,6 +20597,18 @@ import { AnnotationEditorParams } from './annotation-editor-params';
 
         window.addEventListener("beforeprint", stopPropagationIfNeeded);
         window.addEventListener("afterprint", stopPropagationIfNeeded);
+      }
+
+     // declare onSign custom  event
+      if ("onSign" in window) {
+        var stopPropagationIfNeeded = function stopPropagationIfNeeded(event) {
+          if (event.detail !== "custom" && event.stopImmediatePropagation) {
+            event.stopImmediatePropagation();
+          }
+        }
+
+        window.addEventListener("onSign", stopPropagationIfNeeded);
+
       }
 
       var overlayPromise;

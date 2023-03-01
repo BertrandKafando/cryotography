@@ -14,7 +14,7 @@
  */
 
 // get AnnotationEditorParamsType from node_modules\pdfjs-dist\build\pdf.js
-import { AnnotationEditorParamsType } from "pdfjs-dist";
+import { AnnotationEditorParamsType } from "./annotationType.js";
 
 class AnnotationEditorParams {
   /**
@@ -69,7 +69,7 @@ class AnnotationEditorParams {
       });
     });
 
-    this.eventBus._on("annotationeditorparamschanged", evt => {
+    this.eventBus.on("annotationeditorparamschanged", evt => {
       for (const [type, value] of evt.details) {
         switch (type) {
           case AnnotationEditorParamsType.FREETEXT_SIZE:
@@ -94,3 +94,4 @@ class AnnotationEditorParams {
 }
 
 export { AnnotationEditorParams };
+
