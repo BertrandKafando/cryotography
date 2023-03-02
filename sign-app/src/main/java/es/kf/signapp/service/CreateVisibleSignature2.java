@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -71,6 +72,7 @@ import java.util.List;
  * @author Vakhtang Koroghlishvili
  * @author Tilman Hausherr
  */
+@Service
 public class CreateVisibleSignature2 extends CreateSignatureBase
 {
     private SignatureOptions signatureOptions;
@@ -99,7 +101,13 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
             throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, CertificateException
     {
         super(keystore, pin);
+
     }
+
+  public  CreateVisibleSignature2() throws IOException, KeyStoreException {
+        super();
+      System.out.println("CreateVisibleSignature2");
+  }
 
     public File getImageFile()
     {
@@ -305,6 +313,187 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
         IOUtils.closeQuietly(signatureOptions);
     }
 
+
+
+
+
+
+    /*@Bertrand*/
+
+    public byte[]  signPDF(byte [] inputFile, File signedFile, Rectangle2D humanRect, String tsaUrl, String signatureFieldName) throws IOException
+    {
+        if (inputFile == null  )
+        {
+            throw new IOException("Document for signing does not exist");
+        }
+
+        setTsaUrl(tsaUrl);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        // creating output document and prepare the IO streams.
+
+        try (FileOutputStream fos = new FileOutputStream(signedFile);
+             PDDocument doc = PDDocument.load(inputFile))
+        {
+            // call SigUtils.checkCrossReferenceTable(doc) if Adobe complains
+            // and read https://stackoverflow.com/a/71293901/535646
+            // and https://issues.apache.org/jira/browse/PDFBOX-5382
+
+            int accessPermissions = SigUtils.getMDPPermission(doc);
+            if (accessPermissions == 1)
+            {
+                throw new IllegalStateException("No changes to the document are permitted due to DocMDP transform parameters dictionary");
+            }
+            // Note that PDFBox has a bug that visual signing on certified files with permission 2
+            // doesn't work properly, see PDFBOX-3699. As long as this issue is open, you may want to
+            // be careful with such files.
+
+            PDSignature signature = null;
+            PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm(null);
+            PDRectangle rect = null;
+
+            // sign a PDF with an existing empty signature, as created by the CreateEmptySignatureForm example.
+            if (acroForm != null)
+            {
+                signature = findExistingSignature(acroForm, signatureFieldName);
+                if (signature != null)
+                {
+                    rect = acroForm.getField(signatureFieldName).getWidgets().get(0).getRectangle();
+                }
+            }
+
+            if (signature == null)
+            {
+                // create signature dictionary
+                signature = new PDSignature();
+            }
+
+            if (rect == null)
+            {
+                rect = createSignatureRectangle(doc, humanRect);
+            }
+
+            // Optional: certify
+            // can be done only if version is at least 1.5 and if not already set
+            // doing this on a PDF/A-1b file fails validation by Adobe preflight (PDFBOX-3821)
+            // PDF/A-1b requires PDF version 1.4 max, so don't increase the version on such files.
+            if (doc.getVersion() >= 1.5f && accessPermissions == 0)
+            {
+                SigUtils.setMDPPermission(doc, signature, 2);
+            }
+
+            if (acroForm != null && acroForm.getNeedAppearances())
+            {
+                // PDFBOX-3738 NeedAppearances true results in visible signature becoming invisible
+                // with Adobe Reader
+                if (acroForm.getFields().isEmpty())
+                {
+                    // we can safely delete it if there are no fields
+                    acroForm.getCOSObject().removeItem(COSName.NEED_APPEARANCES);
+                    // note that if you've set MDP permissions, the removal of this item
+                    // may result in Adobe Reader claiming that the document has been changed.
+                    // and/or that field content won't be displayed properly.
+                    // ==> decide what you prefer and adjust your code accordingly.
+                }
+                else
+                {
+                    System.out.println("/NeedAppearances is set, signature may be ignored by Adobe Reader");
+                }
+            }
+
+            // default filter
+            signature.setFilter(PDSignature.FILTER_ADOBE_PPKLITE);
+
+            // subfilter for basic and PAdES Part 2 signatures
+            signature.setSubFilter(PDSignature.SUBFILTER_ADBE_PKCS7_DETACHED);
+
+            signature.setName("Name");
+            signature.setLocation("Location");
+            signature.setReason("Reason");
+
+            // the signing date, needed for valid signature
+            signature.setSignDate(Calendar.getInstance());
+
+            // do not set SignatureInterface instance, if external signing used
+            SignatureInterface signatureInterface = isExternalSigning() ? null : this;
+
+            // register signature dictionary and sign interface
+            signatureOptions = new SignatureOptions();
+            signatureOptions.setVisualSignature(createVisualSignatureTemplate(doc, 0, rect, signature));
+            signatureOptions.setPage(0);
+            doc.addSignature(signature, signatureInterface, signatureOptions);
+
+            if (isExternalSigning())
+            {
+                ExternalSigningSupport externalSigning = doc.saveIncrementalForExternalSigning(fos);
+                // invoke external signature service
+                byte[] cmsSignature = sign(externalSigning.getContent());
+
+                // Explanation of late external signing (off by default):
+                // If you want to add the signature in a separate step, then set an empty byte array
+                // and call signature.getByteRange() and remember the offset signature.getByteRange()[1]+1.
+                // you can write the ascii hex signature at a later time even if you don't have this
+                // PDDocument object anymore, with classic java file random access methods.
+                // If you can't remember the offset value from ByteRange because your context has changed,
+                // then open the file with PDFBox, find the field with findExistingSignature() or
+                // PDDocument.getLastSignatureDictionary() and get the ByteRange from there.
+                // Close the file and then write the signature as explained earlier in this comment.
+                if (isLateExternalSigning())
+                {
+                    // this saves the file with a 0 signature
+                    externalSigning.setSignature(new byte[0]);
+
+                    // remember the offset (add 1 because of "<")
+                    int offset = signature.getByteRange()[1] + 1;
+
+                    // now write the signature at the correct offset without any PDFBox methods
+                    try (RandomAccessFile raf = new RandomAccessFile(signedFile, "rw"))
+                    {
+                        raf.seek(offset);
+                        raf.write(Hex.getBytes(cmsSignature));
+                    }
+                }
+                else
+                {
+                    // set signature bytes received from the service and save the file
+                    externalSigning.setSignature(cmsSignature);
+                }
+            }
+            else
+            {
+                // write incremental (only for signing purpose)
+
+
+                // return modify fill like byte array.
+
+                doc.saveIncremental(fos);
+                doc.saveIncremental(out);
+
+
+
+            }
+        }
+
+        // Do not close signatureOptions before saving, because some COSStream objects within
+        // are transferred to the signed document.
+        // Do not allow signatureOptions get out of scope before saving, because then the COSDocument
+        // in signature options might by closed by gc, which would close COSStream objects prematurely.
+        // See https://issues.apache.org/jira/browse/PDFBOX-3743
+        IOUtils.closeQuietly(signatureOptions);
+        return out.toByteArray();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     public PDRectangle createSignatureRectangle(PDDocument doc, Rectangle2D humanRect)
     {
         float x = (float) humanRect.getX();
@@ -415,7 +604,10 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
                 }
 
                 // show background (just for debugging, to see the rect size + position)
-                cs.setNonStrokingColor(Color.yellow);
+                /*@Bertrand*/
+               // cs.setNonStrokingColor(Color.yellow);
+                // put transparence background
+                cs.setNonStrokingColor(0, 0, 0, 0);
                 cs.addRect(-5000, -5000, 10000, 10000);
                 cs.fill();
 
@@ -555,7 +747,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
     /**
      * This will print the usage for this program.
      */
-    private static void usage()
+    public  void usage()
     {
         System.err.println("Usage: java " + CreateVisibleSignature2.class.getName()
                 + " <pkcs12-keystore-file> <pin> <input-pdf> <sign-image>\n" + "" +

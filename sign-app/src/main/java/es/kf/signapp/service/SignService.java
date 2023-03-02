@@ -29,7 +29,7 @@ public class SignService {
 
     public  SignService() throws UnrecoverableKeyException, CertificateException, KeyStoreException, NoSuchAlgorithmException, IOException {
         LoadKeytore();
-        signInterface = new CreateVisibleSignature2(keystore,password);
+        signInterface = null;
     }
 
 

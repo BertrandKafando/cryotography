@@ -1,5 +1,11 @@
 #the-canvas {
     border: 1px solid black;
-    direction: ltr;
-    text-align: center;
+}
+
+/* fix in stop of canvas*/
+#add-line-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+
 }

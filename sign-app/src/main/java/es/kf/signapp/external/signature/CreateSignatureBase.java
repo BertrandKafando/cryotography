@@ -16,6 +16,7 @@ package es.kf.signapp.external.signature;
  * limitations under the License.
  */
 
+
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.CMSException;
@@ -27,12 +28,13 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
+import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Enumeration;
  
@@ -42,6 +44,9 @@ import java.util.Enumeration;
      private Certificate[] certificateChain;
      private String tsaUrl;
      private boolean externalSigning;
+
+     public static final String KEYSTORE = "src/main/resources/keyStore.p12";
+     public static final String PASSWORD = "mypassword";
  
      /**
       * Initialize the signature creator with a keystore (pkcs12) and pin that should be used for the
@@ -61,6 +66,10 @@ import java.util.Enumeration;
          // grabs the first alias from the keystore and get the private key. An
          // alternative method or constructor could be used for setting a specific
          // alias that should be used.
+         loadAttributesValue(keystore, pin);
+     }
+
+     private void loadAttributesValue(KeyStore keystore, char[] pin) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, CertificateExpiredException, CertificateNotYetValidException, CertificateParsingException, IOException {
          Enumeration<String> aliases = keystore.aliases();
          String alias;
          Certificate cert = null;
@@ -79,16 +88,33 @@ import java.util.Enumeration;
                  {
                      // avoid expired certificate
                      ((X509Certificate) cert).checkValidity();
- 
+
                      SigUtils.checkCertificateUsage((X509Certificate) cert);
                  }
              }
          }
- 
+
          if (cert == null)
          {
              throw new IOException("Could not find certificate");
          }
+     }
+
+     public CreateSignatureBase() throws IOException, KeyStoreException {
+         // load keystore
+         KeyStore keystore = KeyStore.getInstance("PKCS12");
+         char[] password = PASSWORD.toCharArray(); // TODO use Java 6 java.io.Console.readPassword
+         try (InputStream is = new FileInputStream(KEYSTORE))
+         {
+             keystore.load(is, password);
+
+             loadAttributesValue(keystore, password);
+
+
+         } catch (CertificateException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+             throw new RuntimeException(e);
+         }
+
      }
  
      public final void setPrivateKey(PrivateKey privateKey)
