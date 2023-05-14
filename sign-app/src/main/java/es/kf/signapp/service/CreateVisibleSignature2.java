@@ -119,6 +119,14 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
         this.imageFile = imageFile;
     }
 
+    public void setImageFile(byte [] imageFile) throws IOException {
+        File file = new File("src/main/resources/imgs/es.png");
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(imageFile);
+        fos.close();
+        this.imageFile = file;
+    }
+
     public boolean isLateExternalSigning()
     {
         return lateExternalSigning;
@@ -320,7 +328,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
 
     /*@Bertrand*/
 
-    public byte[]  signPDF(byte [] inputFile, File signedFile, Rectangle2D humanRect, String tsaUrl, String signatureFieldName) throws IOException
+    public byte[]  signPDF(byte [] inputFile, File signedFile, Rectangle2D humanRect, String tsaUrl, String signatureFieldName,int pageIndex) throws IOException
     {
         if (inputFile == null  )
         {
@@ -420,7 +428,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
             // register signature dictionary and sign interface
             signatureOptions = new SignatureOptions();
             signatureOptions.setVisualSignature(createVisualSignatureTemplate(doc, 0, rect, signature));
-            signatureOptions.setPage(0);
+            signatureOptions.setPage(pageIndex);
             doc.addSignature(signature, signatureInterface, signatureOptions);
 
             if (isExternalSigning())

@@ -1,6 +1,5 @@
 package es.kf.signapp.dtos;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,5 +8,7 @@ import lombok.Setter;
 public class SignRequestPayLoad {
     private String pdfBytes;
     private String fileName;
+    private DocumentDTO document;
     private SignImage signImage;
+    private WorkflowDTO workflow;
 }

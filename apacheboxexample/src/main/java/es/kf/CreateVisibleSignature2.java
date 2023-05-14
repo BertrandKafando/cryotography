@@ -87,6 +87,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
     public static final String KEYSTORE = "src/main/resources/keyStore.p12";
     public static final String PASSWORD = "mypassword";
     public static final String SRC = "src/main/resources/Hello.pdf";
+    public static final String SRC2 = "src/main/resources/Hello_signed.pdf";
     public static final String DEST = "src/main/resources/res/";
     public static final String IMG = "src/main/resources/imgs/es.png";
 
@@ -423,7 +424,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
 
                 // show background (just for debugging, to see the rect size + position)
                 cs.setNonStrokingColor(Color.yellow);
-                cs.addRect(-5000, -5000, 10000, 10000);
+                cs.addRect(-5000, -5000, 0, 0);
                 cs.fill();
 
                 if (imageFile != null)
@@ -534,7 +535,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
             keystore.load(is, password);
         }
 
-        File documentFile = new File(SRC);
+        File documentFile = new File(SRC2);
 
         CreateVisibleSignature2 signing = new CreateVisibleSignature2(keystore, password.clone());
 
@@ -546,7 +547,7 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
         File signedDocumentFile;
         String name = documentFile.getName();
         String substring = name.substring(0, name.lastIndexOf('.'));
-        signedDocumentFile = new File(documentFile.getParent(), substring + "_signed.pdf");
+        signedDocumentFile = new File(documentFile.getParent(), substring + "_signed2.pdf");
 
         signing.setExternalSigning(externalSig);
 
@@ -555,9 +556,9 @@ public class CreateVisibleSignature2 extends CreateSignatureBase
         // So a human would want to position a signature (x,y) units from the
         // top left of the displayed page, and the field has a horizontal width and a vertical height
         // regardless of page rotation.
-        Rectangle2D humanRect = new Rectangle2D.Float(100, 200, 150, 50);
+        Rectangle2D humanRect = new Rectangle2D.Float(100, 200, 0, 0);
 
-        signing.signPDF(documentFile, signedDocumentFile, humanRect, tsaUrl, "Signature1");
+        signing.signPDF(documentFile, signedDocumentFile, humanRect, tsaUrl, "Signature2");
     }
 
     /**

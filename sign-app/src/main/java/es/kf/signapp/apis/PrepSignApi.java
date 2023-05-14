@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/prepSign")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class PrepSignApi {
     private  final CreateEmptySignatureForm createEmptySignatureForm;
 

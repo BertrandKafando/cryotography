@@ -2,13 +2,14 @@ package es.kf.signapp.controller;
 
 import es.kf.signapp.service.HandleFile;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
-@RestController
-public class FileController {
 
+public class FileController {
+/*
     HandleFile handleFile;
 
     public FileController() throws IOException {
@@ -18,6 +19,6 @@ public class FileController {
     @GetMapping("/file")
     public byte[] getFile() throws IOException {
         return handleFile.getFileinBytes();
-    }
+    }*/
 }
 

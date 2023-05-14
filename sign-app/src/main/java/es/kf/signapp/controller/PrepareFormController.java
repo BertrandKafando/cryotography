@@ -6,15 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-//@Controller
-@RequiredArgsConstructor
+
+
 public class PrepareFormController {
-    public static final String SRC = "src/main/resources/Hello.pdf";
+ /*   public static final String SRC = "src/main/resources/Hello.pdf";
 
     public  final CreateEmptySignatureForm createEmptySignatureForm;
 
@@ -35,6 +36,6 @@ public class PrepareFormController {
         this.createEmptySignatureForm.createEmptySignatureForm(SRC);
         model.addAttribute("message", "Upload a document to sign");
         return "prepDoc";
-    }
+    }*/
 
 }
